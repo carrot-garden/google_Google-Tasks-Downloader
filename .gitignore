@@ -5,5 +5,6 @@
 *.war
 *.ear
 
-#target
-target
+#directories
+target/
+appData/
