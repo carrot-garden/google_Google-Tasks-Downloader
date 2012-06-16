@@ -4,7 +4,7 @@ import com.patrickayoup.googletasksdownloader.controller.AuthViewController;
 import com.patrickayoup.util.exception.FeatureNotImplementedException;
 import com.patrickayoup.util.google.oauth.OAuth2Authorizer;
 import com.patrickayoup.util.parser.ConfigParser;
-import com.patrickayoup.util.writer.ConfigWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -116,7 +116,9 @@ public class GoogleTasksDownloader {
 
     private static LinkedHashMap<String, String> getCredentials() throws URISyntaxException, FileNotFoundException {
 
-        ConfigParser parser = new ConfigParser(CONFIG_FILE.toURI());
+        File configFile = new File(CONFIG_FILE.toURI());
+
+        ConfigParser parser = new ConfigParser(configFile);
         return parser.parseConfig();
     }
 }
