@@ -1,6 +1,5 @@
 package com.patrickayoup.googletasksdownloader.controller;
 
-import com.patrickayoup.googletasksdownloader.GoogleTasksDownloader;
 import com.patrickayoup.googletasksdownloader.view.AuthView;
 import com.patrickayoup.util.google.oauth.OAuth2Authorizer;
 import com.patrickayoup.util.parser.JSONParser;
@@ -11,9 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -142,12 +139,11 @@ public class AuthViewController extends Thread implements ActionListener {
 
         return parser.simpleParse(response);
     }
-    
+
     private static void writeCredentials(OAuth2Authorizer auth) throws URISyntaxException, FileNotFoundException {
 
-        File currentDir = new File("foo.txt");
-        
-        ConfigWriter confWrite = new ConfigWriter(new URI(currentDir.getAbsolutePath()));
+        File configFile = new File("appData/authToken.conf");
+        ConfigWriter confWrite = new ConfigWriter(configFile);
         confWrite.writeConfig(auth.getCredentials());
     }
 }
