@@ -1,0 +1,11 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+#directories
+target/
+appData/
+/nbactions.xml
