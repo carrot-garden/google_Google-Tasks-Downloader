@@ -1,11 +1,13 @@
 package com.patrickayoup.googletasksdownloader;
 
 import com.patrickayoup.googletasksdownloader.controller.AuthViewController;
+import com.patrickayoup.googletasksdownloader.utils.ApplicationInitializer;
 import com.patrickayoup.util.exception.FeatureNotImplementedException;
 import com.patrickayoup.util.google.oauth.OAuth2Authorizer;
 import com.patrickayoup.util.parser.ConfigParser;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedHashMap;
@@ -27,7 +29,17 @@ public class GoogleTasksDownloader {
             GoogleTasksDownloader.class.getResource("/googleTasksDownloader.conf");
 
     public static void main(String[] args) {
-
+        
+        try {
+            
+            //Initialize the directory structure if it does not exist.
+            ApplicationInitializer.initializeDirectoryStructure();
+        } catch (IOException ex) {
+            
+            //Nothing has been done yet. Exit.
+            System.exit(1);
+        }
+        
         //Make the initial request and get the access code.
         OAuth2Authorizer auth;
 
