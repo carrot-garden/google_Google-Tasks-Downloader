@@ -4,6 +4,7 @@ import com.patrickayoup.googletasksdownloader.controller.AuthViewController;
 import com.patrickayoup.googletasksdownloader.utils.ApplicationInitializer;
 import com.patrickayoup.util.exception.FeatureNotImplementedException;
 import com.patrickayoup.util.google.oauth.OAuth2Authorizer;
+import com.patrickayoup.util.google.tasks.GoogleTasksClient;
 import com.patrickayoup.util.parser.ConfigParser;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,7 +66,7 @@ public class GoogleTasksDownloader {
             System.exit(0);
         }
 
-
+        
     }
 
     private static void printLists() throws FeatureNotImplementedException {
@@ -82,28 +83,27 @@ public class GoogleTasksDownloader {
 
     private static void fileMode() throws FeatureNotImplementedException {
 
-        // TODO Implement fileMode().
-        throw new FeatureNotImplementedException();
-    }
+        //Retrieve all task lists from the user.
+        
+        
 
-    //def fileMode():
-//    '''Method for print to file mode. Prints all lists in seperate files.'''
+        
 //    #Retrieve all task lists from the user.
 //    tasklists = service.tasklists().list().execute()
-//
+//    
 //    idTitleList = []
-//
+//    
 //    #Store the titles and ids as tuples in a list.
 //    for tasklist in tasklists['items']:
 //        idTitleList.append((tasklist['id'], tasklist['title']))
 //        fileName = "taskLists/" + tasklist['title'] + ".txt"
-//        listObject = taskWriter.TaskList()
+//        listObject = TaskWriter.TaskList()
 //        outputFile = open(fileName,'w')
 //        listObject.writeTitle(tasklist['title'],outputFile)
 //        tasks = service.tasks().list(tasklist=tasklist['id']).execute()
-//
+//    
 //        for task in tasks['items']:
-//
+//            
 //            if 'parent' in task:
 //                if task['parent'] == listObject.lastParent[-1]:
 //                    listObject.writeSameLevelTask(task['title'],task['id'],task['status'],outputFile)
@@ -111,8 +111,12 @@ public class GoogleTasksDownloader {
 //                    listObject.writeUpLevelTask(task['title'],task['id'],task['status'],outputFile)
 //            else:
 //                listObject.writeDownLevelTask(task['title'],task['id'],task['status'],outputFile)
-//
+//            
 //        outputFile.close()
+        throw new FeatureNotImplementedException();
+    }
+
+
 
     private static LinkedList<LinkedList<String>> getTaskLists() throws FeatureNotImplementedException {
 
