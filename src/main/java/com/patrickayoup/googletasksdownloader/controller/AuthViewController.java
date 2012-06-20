@@ -125,8 +125,6 @@ public class AuthViewController extends Thread implements ActionListener {
                 writeCredentials(authorizer);
                 JOptionPane.showMessageDialog(view, "Authorization Complete. Your task lists will be downloaded the next time you run Google Tasks Downloader.");
                 view.dispose();
-                
-                GoogleTasksClient.getTaskLists(responseMap.get("token_type"), responseMap.get("access_token"), authorizer.getClientSecret());
             } catch (IOException ex) {
 
                 //Display alert to user.

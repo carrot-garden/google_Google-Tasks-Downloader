@@ -4,11 +4,9 @@ import com.patrickayoup.googletasksdownloader.controller.AuthViewController;
 import com.patrickayoup.googletasksdownloader.utils.ApplicationInitializer;
 import com.patrickayoup.util.exception.FeatureNotImplementedException;
 import com.patrickayoup.util.google.oauth.OAuth2Authorizer;
-import com.patrickayoup.util.google.tasks.GoogleTasksClient;
 import com.patrickayoup.util.parser.ConfigParser;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedHashMap;
@@ -20,53 +18,57 @@ import java.util.logging.Logger;
  * @author patrickayoup
  *
  */
-public class GoogleTasksDownloader {
 
+public class GoogleTasksDownloader {
+    
     private static final String LEG_1_ENDPOINT = "https://accounts.google.com/o/oauth2/auth";
     private static final String SCOPE = "https://www.googleapis.com/auth/tasks.readonly";
     private static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
     private static final String RESPONSE_TYPE = "code";
     private static final URL CONFIG_FILE =
-            GoogleTasksDownloader.class.getResource("/googleTasksDownloader.conf");
+        GoogleTasksDownloader.class.getResource("/googleTasksDownloader.conf");
 
+    
     public static void main(String[] args) {
-        
+
+        LinkedHashMap<String, String> credentials;
+        ApplicationInitializer init = null;
+        OAuth2Authorizer auth = null;
+        boolean initRun = false;
+                
         try {
-            
+           
             //Initialize the directory structure if it does not exist.
             ApplicationInitializer.initializeDirectoryStructure();
-        } catch (IOException ex) {
             
-            //Nothing has been done yet. Exit.
-            System.exit(1);
-        }
-        
-        //Make the initial request and get the access code.
-        OAuth2Authorizer auth;
-
-        LinkedHashMap<String, String> credentials = null;
-
-        try {
-
             credentials = getCredentials();
+            
+            auth = new OAuth2Authorizer(
+                credentials.get("client_id"), credentials.get("client_secret"), LEG_1_ENDPOINT,
+                SCOPE, REDIRECT_URI, RESPONSE_TYPE);
+            
+            init = new ApplicationInitializer(auth, credentials);
         } catch (Exception ex) {
 
-            Logger.getLogger(GoogleTasksDownloader.class.getName()).log(Level.SEVERE, null, ex);
+            //There was something wrong with the token file.
+            initRun = true;            
         }
-
-        try {
-
-            auth = new OAuth2Authorizer(credentials.get("client_id"), credentials.get("client_secret"), LEG_1_ENDPOINT,
-                    SCOPE, REDIRECT_URI, RESPONSE_TYPE);
-            AuthViewController authViewController = new AuthViewController(auth);
-
-        } catch (Exception ex) {
-
-            Logger.getLogger(GoogleTasksDownloader.class.getName()).log(Level.SEVERE, null, ex);
-            System.exit(0);
-        }
-
         
+        if (initRun) {
+            
+            try {
+                
+                new AuthViewController(auth);
+            } catch (Exception ex) {
+                
+                Logger.getLogger(GoogleTasksDownloader.class.getName()).log(Level.SEVERE, null, ex);
+                System.exit(1);
+            }
+        } else {
+            
+            //TODO: IMPLEMENT OP LOGIC
+            System.out.println("Refreshed");
+        }
     }
 
     private static void printLists() throws FeatureNotImplementedException {
@@ -129,7 +131,7 @@ public class GoogleTasksDownloader {
         //TODO: Implement usageMessage().
         throw new FeatureNotImplementedException();
     }
-
+    
     private static LinkedHashMap<String, String> getCredentials() throws URISyntaxException, FileNotFoundException {
 
         File configFile = new File(CONFIG_FILE.toURI());
