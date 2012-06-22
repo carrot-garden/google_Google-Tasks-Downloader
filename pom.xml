@@ -9,6 +9,7 @@
 
     <name>GoogleTasksDownloader</name>
     <url>http://maven.apache.org</url>
+    
     <build>
         <plugins>
             <plugin>
@@ -21,6 +22,7 @@
             </plugin>
         </plugins>
     </build>
+    
     <repositories>
         <repository>
             <url>http://repo1.maven.org/maven2/</url>
@@ -28,13 +30,24 @@
             <layout>default</layout>
             <name>Repository for library Library[swing-layout]</name>
         </repository>
+        
+        <repository>
+            <url>http://mavenrepo.google-api-java-client.googlecode.com/hg</url>
+            <id>google-api-services</id>
+        </repository>
     </repositories>
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
+    
     <dependencies>
-
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-tasks</artifactId>
+            <version>v1-rev3-1.7.1-beta</version>
+        </dependency>
+        
         <dependency>
             <groupId>com.patrickayoup</groupId>
             <artifactId>Utils</artifactId>
@@ -46,6 +59,5 @@
             <artifactId>swing-layout</artifactId>
             <version>1.0.3</version>
         </dependency>
-        
     </dependencies>
 </project>

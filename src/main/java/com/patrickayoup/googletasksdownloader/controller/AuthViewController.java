@@ -1,9 +1,12 @@
 package com.patrickayoup.googletasksdownloader.controller;
 
+import com.google.api.client.auth.oauth2.TokenResponse;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson.JacksonFactory;
+import com.google.api.services.tasks.Tasks;
 import com.patrickayoup.googletasksdownloader.view.AuthView;
-import com.patrickayoup.util.google.oauth.OAuth2Authorizer;
-import com.patrickayoup.util.google.tasks.GoogleTasksClient;
-import com.patrickayoup.util.parser.JSONParser;
 import com.patrickayoup.util.writer.ConfigWriter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 import java.util.logging.Level;
@@ -26,16 +30,25 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class AuthViewController extends Thread implements ActionListener {
 
     private final AuthView view;
-    private final OAuth2Authorizer authorizer;
+    private static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
+
+    //TODO: Encapsulate this into a model.
+    private String authorizationCode;
+    private String authorizationURL;
+    private String clientId;
+    private String clientSecret;
+    private Tasks service;
 
     /**
      * Constructor.
      */
-    public AuthViewController(OAuth2Authorizer authorizer) throws ClassNotFoundException,
+    public AuthViewController(String authorizationURL, String clientId, String clientSecret) throws ClassNotFoundException,
             InstantiationException, IllegalAccessException,
             UnsupportedLookAndFeelException {
 
-        this.authorizer = authorizer;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.authorizationURL = authorizationURL;
         view = new AuthView();
         registerListeners();
         launchView();
@@ -99,7 +112,7 @@ public class AuthViewController extends Thread implements ActionListener {
     private void launchSitePressed() throws IOException, URISyntaxException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
 
         view.getAuthorizationCodeTextField().requestFocus();
-        authorizer.initiateRequest();
+        java.awt.Desktop.getDesktop().browse(new URI(authorizationURL));
     }
 
     private void submitPressed() throws IllegalStateException, URISyntaxException, MalformedURLException, IOException {
@@ -114,15 +127,25 @@ public class AuthViewController extends Thread implements ActionListener {
 
         } else {
 
-            authorizer.setAuthorizationCode(code);
+            authorizationCode = code;
 
             try {
 
-                String response = authorizer.requestSecondLeg("https://accounts.google.com/o/oauth2/token?",
-                    "application/x-www-form-urlencoded");
-                LinkedHashMap<String, String> responseMap = parseResponse(response);
-                authorizer.setCredentials(responseMap);
-                writeCredentials(authorizer);
+                HttpTransport httpTransport = new NetHttpTransport();
+                JacksonFactory jsonFactory = new JacksonFactory();
+                
+                TokenResponse response = new GoogleAuthorizationCodeTokenRequest(
+                        httpTransport, jsonFactory, clientId, clientSecret,
+                        authorizationCode, REDIRECT_URI).execute();
+                
+                LinkedHashMap<String, String> tokenInfo = new LinkedHashMap<String, String>();
+                tokenInfo.put("access_token", response.getAccessToken());
+                tokenInfo.put("token_type", response.getTokenType());
+                tokenInfo.put("expires_in", Long.toString(response.getExpiresInSeconds()));
+                tokenInfo.put("refresh_token", response.getRefreshToken());
+
+                writeCredentials(tokenInfo);               
+                
                 JOptionPane.showMessageDialog(view, "Authorization Complete. Your task lists will be downloaded the next time you run Google Tasks Downloader.");
                 view.dispose();
             } catch (IOException ex) {
@@ -134,17 +157,10 @@ public class AuthViewController extends Thread implements ActionListener {
         }
     }
 
-    private LinkedHashMap<String, String> parseResponse(String response) throws IOException {
-
-        JSONParser parser = new JSONParser();
-
-        return parser.simpleParse(response);
-    }
-
-    private static void writeCredentials(OAuth2Authorizer auth) throws URISyntaxException, FileNotFoundException {
+    private static void writeCredentials(LinkedHashMap<String, String> tokenInfo) throws URISyntaxException, FileNotFoundException {
 
         File configFile = new File("appData/authToken.conf");
         ConfigWriter confWrite = new ConfigWriter(configFile);
-        confWrite.writeConfig(auth.getCredentials());
+        confWrite.writeConfig(tokenInfo);
     }
 }
