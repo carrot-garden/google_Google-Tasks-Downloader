@@ -8,6 +8,5 @@
 #others
 target/
 appData/
-/nbactions.xml
 src/main/resources/googleTasksDownloader.conf
 *~

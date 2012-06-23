@@ -1,9 +1,14 @@
 package com.patrickayoup.googletasksdownloader.utils;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
+import com.google.api.client.auth.oauth2.TokenResponse;
+import com.google.api.client.googleapis.auth.oauth2.*;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson.JacksonFactory;
 import com.patrickayoup.googletasksdownloader.GoogleTasksDownloader;
 import com.patrickayoup.googletasksdownloader.controller.AuthViewController;
 import com.patrickayoup.util.parser.ConfigParser;
+import com.patrickayoup.util.writer.ConfigWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,17 +17,20 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import javax.swing.JOptionPane;
 import javax.swing.UnsupportedLookAndFeelException;
 
 public class ApplicationInitializer {
     
     private static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
     private static final LinkedList<String> SCOPES = new LinkedList<String>(Arrays.asList("https://www.googleapis.com/auth/tasks.readonly"));
-    private String clientId, clientSecret;
+    private String clientId, clientSecret, refreshToken;
     private static final URL CONFIG_FILE =
         GoogleTasksDownloader.class.getResource("/googleTasksDownloader.conf");
     private static final File AUTH_TOKEN = new File("appData/authToken.conf");    
-    private LinkedHashMap<String, String> tokenResponse;    
+    private LinkedHashMap<String, String> tokenResponse;
+    private static final File LISTS = new File("taskLists");
+
      
     public ApplicationInitializer() throws URISyntaxException, FileNotFoundException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
         
@@ -46,6 +54,11 @@ public class ApplicationInitializer {
             
             AUTH_TOKEN.createNewFile();
         }
+        
+        if (!LISTS.exists()) {
+            
+            LISTS.mkdir();
+        }
     }
     
     public void getToken() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
@@ -55,9 +68,29 @@ public class ApplicationInitializer {
         new AuthViewController(authorizationURL, clientId, clientSecret);
     }
     
-    public LinkedHashMap<String, String> refreshToken() {
+    public GoogleCredential refreshToken() throws IOException, FileNotFoundException, URISyntaxException {
         
-        return new LinkedHashMap<String, String>();
+        getRefreshToken();
+        
+        HttpTransport httpTransport = new NetHttpTransport();
+        JacksonFactory jsonFactory = new JacksonFactory();
+        
+        GoogleTokenResponse response = new GoogleRefreshTokenRequest(httpTransport, jsonFactory, refreshToken, clientId, clientSecret).execute();
+                
+        LinkedHashMap<String, String> tokenInfo = new LinkedHashMap<String, String>();
+        tokenInfo.put("access_token", response.getAccessToken());
+        tokenInfo.put("token_type", response.getTokenType());
+        tokenInfo.put("expires_in", Long.toString(response.getExpiresInSeconds()));
+        tokenInfo.put("refresh_token", refreshToken);
+
+        ConfigWriter confWrite = new ConfigWriter(AUTH_TOKEN);
+        confWrite.writeConfig(tokenInfo);
+        
+        return new GoogleCredential.Builder()
+                .setTransport(httpTransport)
+                .setJsonFactory(jsonFactory)
+                .setClientSecrets(clientId, clientSecret)
+                .build().setFromTokenResponse(response);
     }
  
     public LinkedHashMap<String, String> getTokenInfo() {
@@ -75,5 +108,15 @@ public class ApplicationInitializer {
         
         clientId = config.get("client_id");
         clientSecret = config.get("client_secret");
+    }
+    
+    private void getRefreshToken() throws FileNotFoundException {
+        
+        LinkedHashMap<String, String> token;
+        
+        ConfigParser parser = new ConfigParser(AUTH_TOKEN);
+        token = parser.parseConfig();
+        
+        refreshToken = token.get("refresh_token");
     }
 }

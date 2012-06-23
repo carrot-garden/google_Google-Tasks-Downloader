@@ -32,7 +32,6 @@ public class AuthViewController extends Thread implements ActionListener {
     private final AuthView view;
     private static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
 
-    //TODO: Encapsulate this into a model.
     private String authorizationCode;
     private String authorizationURL;
     private String clientId;
@@ -46,6 +45,7 @@ public class AuthViewController extends Thread implements ActionListener {
             InstantiationException, IllegalAccessException,
             UnsupportedLookAndFeelException {
 
+        //TODO: Encapsulate into model
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authorizationURL = authorizationURL;

@@ -1,0 +1,11 @@
+Music Theatre Montreal
+
+
+- Check ticket switch
+
+- Check DB failure
+
+- Check for private info before repo commit.
+
+- 
+

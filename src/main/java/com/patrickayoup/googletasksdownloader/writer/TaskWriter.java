@@ -25,6 +25,7 @@ public class TaskWriter {
         
         tabs = 0;
         parent = new Stack<String>();
+        parent.push("noParent");
         lastTask = "";
     }
     
@@ -37,8 +38,9 @@ public class TaskWriter {
     public void writeTitle(String title, File listFile) throws IOException {
         
         title += "\n\n";
-        PrintWriter writer = new PrintWriter(new FileWriter(listFile), true);
+        PrintWriter writer = new PrintWriter(new FileWriter(listFile));
         writer.println(title);
+        writer.close();
     }
     
     /**
@@ -53,9 +55,9 @@ public class TaskWriter {
     public void writeSameLevelTask(String task, String taskId,
             String status, File listFile) throws IOException {
         
-        PrintWriter writer = new PrintWriter(new FileWriter(listFile), true);
+        PrintWriter writer = new PrintWriter(new FileWriter(listFile, true));
         
-        String taskString = prepareTask(status, task);
+        String taskString = prepareTask(task, status);
         
         writer.println(taskString);
         writer.close();
@@ -148,7 +150,7 @@ public class TaskWriter {
         
         String taskString = prepareTask(task, status);
         
-        System.out.println(taskString);
+        System.out.println(taskString.trim());
         
         lastTask = taskId;
     }
@@ -194,4 +196,14 @@ public class TaskWriter {
         parent.pop();
         printSameLevelTask(task, taskId, status);
     }
+    
+    public String getParent() {
+        
+        return parent.peek();
+    }
+
+    public String getLastTask() {
+        
+        return lastTask;
+    }  
 }
