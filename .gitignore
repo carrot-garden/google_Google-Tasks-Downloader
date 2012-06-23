@@ -9,4 +9,5 @@
 target/
 appData/
 src/main/resources/googleTasksDownloader.conf
+nb*
 *~
